@@ -4,9 +4,65 @@ include '../../config/database.php';
 
 if (!isset($_SESSION['authentication'])) {
     echo "<script>window.location.href='../authentication'</script>";
-} ?>
+}
+
+if (!isset($_SESSION['status']) || $_SESSION['status'] != 'admin') {
+    echo "<script>
+        alert('Akses ditolak! Anda tidak memiliki izin untuk mengakses halaman ini.');
+        window.history.back();
+    </script>";
+    exit;
+}
+?>
 
 <?php include '../../template/header.php' ?>
+
+<?php
+if (isset($_SESSION['success'])) {
+    $successMessage = $_SESSION['success'];
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: "Berhasil!",
+                text: "' . addslashes($successMessage) . '",
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+        });
+    </script>';
+    unset($_SESSION['success']);
+}
+
+if (isset($_SESSION['error'])) {
+    $errorMessage = $_SESSION['error'];
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: "Gagal!",
+                text: "' . addslashes($errorMessage) . '",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        });
+    </script>';
+    unset($_SESSION['error']);
+}
+
+if (isset($_SESSION['warning'])) {
+    $wariningMessage = $_SESSION['warning'];
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: "Terjadi Kesalahan!",
+                text: "' . addslashes($wariningMessage) . '",
+                icon: "warning",
+                confirmButtonText: "OK"
+            });
+        });
+    </script>';
+    unset($_SESSION['warning']);
+}
+?>
 
 <div id="layout-wrapper" style="margin-top: -40px;">
     <div class="main-content">
@@ -27,7 +83,7 @@ if (!isset($_SESSION['authentication'])) {
                         </div>
                         <!--end col-->
                         <?php
-                        $id = $_SESSION['id'];
+                        $id = $_GET['id'];
                         $query = "SELECT * FROM karyawan WHERE id = $id";
                         $data = mysqli_query($conn, $query);
                         foreach ($data as $karyawan) {
@@ -78,9 +134,14 @@ if (!isset($_SESSION['authentication'])) {
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="d-flex align-items-center mb-4">
-                                                <h5 class="card-title flex-grow-1 mb-0">Family</h5>
+                                                <h5 class="card-title flex-grow-1 mb-0">Keluarga Karyawan</h5>
                                                 <div class="flex-shrink-0">
-                                                    <input class="form-control d-none" type="file" id="formFile">
+                                                    <a href="../karyawan/index.php" for="formFile" class="btn btn-warning">
+                                                        <i class="ri-home me-1 align-bottom"></i> Home
+                                                    </a>
+                                                    <a href="./create.php?id=<?= $_GET['id'] ?>" for="formFile" class="btn btn-success">
+                                                        <i class="ri-sign-out me-1 align-bottom"></i> Tambah Keluarga
+                                                    </a>
                                                     <a href="../authentication/logout.php" for="formFile" class="btn btn-danger">
                                                         <i class="ri-sign-out me-1 align-bottom"></i> Logout
                                                     </a>
@@ -95,16 +156,18 @@ if (!isset($_SESSION['authentication'])) {
                                                                     <th scope="col">Nama</th>
                                                                     <th scope="col">TTL</th>
                                                                     <th scope="col">Hubungan</th>
+                                                                    <th scope="col">Created</th>
+                                                                    <th scope="col">Action</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
                                                                 <?php
-                                                                $id = $_SESSION['id'];
-                                                                $query = "SELECT * FROM kel_karyawan WHERE karyawan_id = $id";
+                                                                $id = $_GET['id'];
+                                                                $query = "SELECT * FROM kel_karyawan WHERE karyawan_id = '$id'";
                                                                 $data = mysqli_query($conn, $query);
                                                                 if (mysqli_num_rows($data) > 0) { ?>
                                                                     <?php
-                                                                    foreach ($data as $karyawan) {
+                                                                    foreach ($data as $kel) {
                                                                     ?>
                                                                         <tr>
                                                                             <td>
@@ -117,40 +180,52 @@ if (!isset($_SESSION['authentication'])) {
                                                                                     </div>
                                                                                     <div class="ms-3 flex-grow-1">
                                                                                         <h6 class="fs-15 mb-0">
-                                                                                            <?= $karyawan['nama'] ?>
+                                                                                            <?= $kel['nama'] ?>
                                                                                         </h6>
                                                                                     </div>
                                                                                 </div>
                                                                             </td>
                                                                             <td>
                                                                                 <?php
-                                                                                if ($karyawan['tempat_lahir'] !== null) {
-                                                                                    echo $karyawan['tempat_lahir'];
+                                                                                if ($kel['tempat_lahir'] !== null) {
+                                                                                    echo $kel['tempat_lahir'];
                                                                                 } else {
                                                                                     echo '-';
                                                                                 } ?> ,
                                                                                 <?php
-                                                                                if ($karyawan['tanggal_lahir'] !== null) {
-                                                                                    echo $karyawan['tanggal_lahir'];
+                                                                                if ($kel['tanggal_lahir'] !== null) {
+                                                                                    echo date('d-M-Y', strtotime($kel['tanggal_lahir']));
                                                                                 } else {
                                                                                     echo '-';
                                                                                 } ?>
                                                                             </td>
                                                                             <td>
                                                                                 <?php
-                                                                                if ($karyawan['hubungan'] !== null) {
-                                                                                    echo $karyawan['hubungan'];
+                                                                                if ($kel['hubungan'] !== null) {
+                                                                                    echo $kel['hubungan'];
                                                                                 } else {
                                                                                     echo '-';
                                                                                 } ?>
                                                                             </td>
+                                                                            <td>
+                                                                                <?php
+                                                                                if ($kel['created_at'] !== null) {
+                                                                                    echo date('d-M-Y H:i:s', strtotime($kel['created_at']));
+                                                                                } else {
+                                                                                    echo '-';
+                                                                                } ?>
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="./update.php?id=<?= $_GET['id'] ?>&kel=<?= $kel['id'] ?>" class="btn btn-md btn-success">edit</a>
+                                                                                <btn class="btn btn-md btn-danger delete-btn" data-url="./proses/proses_del.php?id=<?= $_GET['id'] ?>&kel=<?= $kel['id'] ?>">Delete</btn>
 
+                                                                            </td>
                                                                         </tr>
                                                                     <?php } ?>
                                                                 <?php } else { ?>
                                                                     <tr>
-                                                                        <td colspan="3" style="text-align: center; font-size: 16px">
-                                                                            Tidak ada data!
+                                                                        <td colspan="5" style="text-align: center; font-size: 16px">
+                                                                            Tidak ada data keluarga!
                                                                         </td>
                                                                     </tr>
                                                                 <?php } ?>
@@ -177,3 +252,30 @@ if (!isset($_SESSION['authentication'])) {
 </div>
 
 <?php include '../../template/footer.php' ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('data-url');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: 'Data yang dihapus tidak dapat dikembalikan!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirect ke URL jika user mengonfirmasi
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    });
+</script>

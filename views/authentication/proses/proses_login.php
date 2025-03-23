@@ -16,10 +16,17 @@ if ($_POST) {
         $password = password_verify($password, $user['password']);
 
         if ($password) {
-            $_SESSION['authentication'] = true;
-            $_SESSION['id'] = $user['id'];
-            $_SESSION['nama'] = $user['nama'];
-            echo "<script>window.location.href='../../karyawan/profile.php'</script>";
+            if ($user['status'] !== 'admin') {
+                $_SESSION['authentication'] = true;
+                $_SESSION['id'] = $user['id'];
+                $_SESSION['status'] = $user['status'];
+                echo "<script>window.location.href='../../karyawan/profile.php'</script>";
+            } else {
+                $_SESSION['authentication'] = true;
+                $_SESSION['id'] = $user['id'];
+                $_SESSION['status'] = $user['status'];
+                echo "<script>window.location.href='../../karyawan/index.php'</script>";
+            }
         } else {
             $_SESSION['error'] = 'Username & Password Salah';
             echo "<script>window.location.href='../index.php'</script>";

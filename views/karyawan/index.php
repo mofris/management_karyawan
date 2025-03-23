@@ -4,9 +4,69 @@ include '../../config/database.php';
 
 if (!isset($_SESSION['authentication'])) {
     echo "<script>window.location.href='../authentication'</script>";
-} ?>
+}
+
+if (!isset($_SESSION['status']) || $_SESSION['status'] != 'admin') {
+    echo "<script>
+        alert('Akses ditolak! Anda tidak memiliki izin untuk mengakses halaman ini.');
+        window.history.back();
+    </script>";
+    exit;
+}
+?>
 
 <?php include '../../template/header.php' ?>
+
+<?php
+if (isset($_SESSION['success'])) {
+    $successMessage = $_SESSION['success'];
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: "Berhasil!",
+                text: "' . addslashes($successMessage) . '",
+                icon: "success",
+                confirmButtonText: "OK"
+            });
+        });
+    </script>';
+    unset($_SESSION['success']);
+}
+?>
+
+<?php
+if (isset($_SESSION['error'])) {
+    $errorMessage = $_SESSION['error'];
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: "Gagal!",
+                text: "' . addslashes($errorMessage) . '",
+                icon: "error",
+                confirmButtonText: "OK"
+            });
+        });
+    </script>';
+    unset($_SESSION['error']);
+}
+?>
+
+<?php
+if (isset($_SESSION['warning'])) {
+    $wariningMessage = $_SESSION['warning'];
+    echo '<script>
+        document.addEventListener("DOMContentLoaded", function() {
+            Swal.fire({
+                title: "Terjadi Kesalahan!",
+                text: "' . addslashes($wariningMessage) . '",
+                icon: "warning",
+                confirmButtonText: "OK"
+            });
+        });
+    </script>';
+    unset($_SESSION['warning']);
+}
+?>
 
 <div id="layout-wrapper" style="margin-top: -40px;">
     <div class="main-content">
@@ -78,9 +138,12 @@ if (!isset($_SESSION['authentication'])) {
                                     <div class="card">
                                         <div class="card-body">
                                             <div class="d-flex align-items-center mb-4">
-                                                <h5 class="card-title flex-grow-1 mb-0">Family</h5>
+                                                <h5 class="card-title flex-grow-1 mb-0">Karyawan</h5>
                                                 <div class="flex-shrink-0">
                                                     <input class="form-control d-none" type="file" id="formFile">
+                                                    <a href="./created.php" for="formFile" class="btn btn-success">
+                                                        <i class="ri-sign-out me-1 align-bottom"></i> Tambah Karyawan
+                                                    </a>
                                                     <a href="../authentication/logout.php" for="formFile" class="btn btn-danger">
                                                         <i class="ri-sign-out me-1 align-bottom"></i> Logout
                                                     </a>
@@ -94,13 +157,19 @@ if (!isset($_SESSION['authentication'])) {
                                                                 <tr>
                                                                     <th scope="col">Nama</th>
                                                                     <th scope="col">TTL</th>
-                                                                    <th scope="col">Hubungan</th>
+                                                                    <th scope="col">Jabatan</th>
+                                                                    <th scope="col">Level</th>
+                                                                    <th scope="col">Activated</th>
+                                                                    <th scope="col">Status</th>
+                                                                    <th scope="col">Keluarga</th>
+                                                                    <th scope="col">Created</th>
+                                                                    <th scope="col">Action</th>
                                                                 </tr>
                                                             </thead>
                                                             <tbody>
                                                                 <?php
                                                                 $id = $_SESSION['id'];
-                                                                $query = "SELECT * FROM kel_karyawan WHERE karyawan_id = $id";
+                                                                $query = "SELECT * FROM karyawan";
                                                                 $data = mysqli_query($conn, $query);
                                                                 if (mysqli_num_rows($data) > 0) { ?>
                                                                     <?php
@@ -138,13 +207,54 @@ if (!isset($_SESSION['authentication'])) {
                                                                             </td>
                                                                             <td>
                                                                                 <?php
-                                                                                if ($karyawan['hubungan'] !== null) {
-                                                                                    echo $karyawan['hubungan'];
+                                                                                if ($karyawan['jabatan'] !== null) {
+                                                                                    echo $karyawan['jabatan'];
                                                                                 } else {
                                                                                     echo '-';
                                                                                 } ?>
                                                                             </td>
+                                                                            <td>
+                                                                                <?php
+                                                                                if ($karyawan['level'] !== null) {
+                                                                                    echo $karyawan['level'];
+                                                                                } else {
+                                                                                    echo '-';
+                                                                                } ?>
+                                                                            </td>
+                                                                            <td>
+                                                                                <?php
+                                                                                if ($karyawan['is_active'] == 1) {
+                                                                                    echo 'Activated';
+                                                                                } else {
+                                                                                    echo 'Non Activated';
+                                                                                } ?>
+                                                                            </td>
+                                                                            <td>
+                                                                                <?php
+                                                                                if ($karyawan['status'] !== null) {
+                                                                                    echo $karyawan['status'];
+                                                                                } else {
+                                                                                    echo '-';
+                                                                                } ?>
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="../kel_karyawan/index.php?id=<?= $karyawan['id'] ?>" class="btn btn-success">
+                                                                                    +
+                                                                                </a>
+                                                                            </td>
+                                                                            <td>
+                                                                                <?php
+                                                                                if ($karyawan['created_at'] !== null) {
+                                                                                    echo date('d-M-Y H:i:s', strtotime($karyawan['created_at']));
+                                                                                } else {
+                                                                                    echo '-';
+                                                                                } ?>
+                                                                            </td>
+                                                                            <td>
+                                                                                <a href="./update.php?id=<?= $karyawan['id'] ?>" class="btn btn-md btn-success">edit</a>
+                                                                                <btn class="btn btn-md btn-danger delete-btn" data-url="./proses/proses_del.php?id=<?= $karyawan['id'] ?>">Delete</btn>
 
+                                                                            </td>
                                                                         </tr>
                                                                     <?php } ?>
                                                                 <?php } else { ?>
@@ -177,3 +287,30 @@ if (!isset($_SESSION['authentication'])) {
 </div>
 
 <?php include '../../template/footer.php' ?>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.delete-btn').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const url = this.getAttribute('data-url');
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    text: 'Data yang dihapus tidak dapat dikembalikan!',
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#d33',
+                    cancelButtonColor: '#3085d6',
+                    confirmButtonText: 'Ya, hapus!',
+                    cancelButtonText: 'Batal',
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        // Redirect ke URL jika user mengonfirmasi
+                        window.location.href = url;
+                    }
+                });
+            });
+        });
+    });
+</script>

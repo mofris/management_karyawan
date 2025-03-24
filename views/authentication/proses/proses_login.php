@@ -6,7 +6,6 @@ if ($_POST) {
     $username = mysqli_real_escape_string($conn, $_POST['username']);
     $password = mysqli_real_escape_string($conn, $_POST['password']);
 
-
     $query = "SELECT * FROM karyawan WHERE username = '$username'";
     $result = mysqli_query($conn, $query);
 

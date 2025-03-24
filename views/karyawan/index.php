@@ -197,10 +197,10 @@ if (isset($_SESSION['warning'])) {
                                                                                     echo $karyawan['tempat_lahir'];
                                                                                 } else {
                                                                                     echo '-';
-                                                                                } ?> ,
+                                                                                } ?>,
                                                                                 <?php
                                                                                 if ($karyawan['tanggal_lahir'] !== null) {
-                                                                                    echo $karyawan['tanggal_lahir'];
+                                                                                    echo date('d-M-Y', strtotime($karyawan['tanggal_lahir']));
                                                                                 } else {
                                                                                     echo '-';
                                                                                 } ?>

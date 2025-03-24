@@ -1,9 +1,11 @@
 <?php
+session_start();
+
 if (!isset($_SESSION['authentication'])) {
     echo "<script>window.location.href='../authentication'</script>";
 }
 
-if (!isset($_SESSION['status']) || $_SESSION['status'] != 'admin') {
+if (!isset($_SESSION['status']) || $_SESSION['status'] !== 'admin') {
     echo "<script>
         alert('Akses ditolak! Anda tidak memiliki izin untuk mengakses halaman ini.');
         window.history.back();

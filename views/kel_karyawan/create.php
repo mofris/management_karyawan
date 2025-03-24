@@ -1,4 +1,5 @@
 <?php
+session_start();
 if (!isset($_SESSION['authentication'])) {
     echo "<script>window.location.href='../authentication'</script>";
 }
@@ -61,7 +62,7 @@ if (!isset($_SESSION['status']) || $_SESSION['status'] != 'admin') {
                                             </div>
                                             <div class="mt-4">
                                                 <button type="submit" class="mt-2 btn btn-success w-100">Tambah data Keluarga Karyawan</button>
-                                                <a href="./index.php" class="mt-2 btn w-100">Kembali ke Data Keluarga Karyawan</a>
+                                                <a href="./index.php?id=<?= $_GET['id'] ?>" class="mt-2 btn w-100">Kembali ke Data Keluarga Karyawan</a>
                                             </div>
                                         </form>
                                     </div>
